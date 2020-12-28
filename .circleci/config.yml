@@ -33,14 +33,13 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout:
-          path: ~/project/frontend
+      - checkout
       - restore_cache:
           keys: [frontend-build]
       - run:
           name: Install Dependencies
           command: | 
-            npm ci --production=false   
+            cd frontend && npm ci --production=false   
       - run:
           name: Build front-end
           command: |
@@ -53,14 +52,13 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout:
-          path: ~/project/backend
+      - checkout
       - restore_cache:
           keys: [backend-build]
       - run:
           name: Install Dependencies
           command: | 
-            npm ci --production=false   
+            cd backend && npm ci --production=false   
       - run:
           name: Build front-end
           command: |
