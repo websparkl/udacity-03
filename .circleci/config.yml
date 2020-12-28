@@ -2,9 +2,7 @@ version: 2.1
 
 commands:
   destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here   
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.  
     steps:
       - run:
           name: Destroy environments
@@ -14,9 +12,7 @@ commands:
             exit 1
 
   revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-      # Add parameter here     
+    description: Revert the last migration if successfully run in the current workflow.  
     steps:
       - run:
           name: Revert migrations
@@ -37,14 +33,18 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
+      - checkout:
+          path: ~/project/frontend
       - restore_cache:
           keys: [frontend-build]
       - run:
+          name: Install Dependencies
+          command: | 
+            npm ci --production=false   
+      - run:
           name: Build front-end
           command: |
-            # Your code here
-            exit 1
+            npm run build:prod         
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -53,53 +53,90 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
+      - checkout:
+          path: ~/project/backend
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Back-end build
+          name: Install Dependencies
+          command: | 
+            npm ci --production=false   
+      - run:
+          name: Build front-end
           command: |
-             # Your code here
-             exit 1
+            npm run build
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
 
   test-frontend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
-      # Restore from cache
-      # Your job code here
+      - checkout:
+          path: ~/project/frontend
+      # Restore from cache    
+      - restore_cache:
+          keys: [frontend-build]
+      # Your job code here    
+      - run:
+          name: Install Dependencies
+          command: | 
+            npm ci --production=false
                 
   test-backend:
     docker:
       # Docker image here
+       - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
-      # Restore from cache
-      # Your job code here
+      - checkout:
+          path: ~/project/backend
+      # Restore from cache    
+      - restore_cache:
+          keys: [backend-build]
+      # Your job code here    
+      - run:
+          name: Install Dependencies
+          command: | 
+            npm ci --production=false
             
   scan-frontend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+       # Checkout code from git
+      - checkout:
+          path: ~/project/frontend
+      # Restore from cache    
+      - restore_cache:
+          keys: [frontend-build]
+      # Your job code here    
+      - run:
+          name: Install Dependencies
+          command: | 
+            npm ci --production=false
 
   scan-backend:
     docker:
-      # Docker image here
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+       # Checkout code from git
+      - checkout:
+          path: ~/project/frontend
+      # Restore from cache    
+      - restore_cache:
+          keys: [frontend-build]
+      # Your job code here    
+      - run:
+          name: Install Dependencies
+          command: | 
+            npm ci --production=false
 
   deploy-infrastructure:
     docker:
-      # Docker image here that supports AWS CLI
+      - image: amazon/aws-cli
     steps:
       # Checkout code from git
       - run:
@@ -133,7 +170,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      # Docker image here that supports Ansible
+       - image: ansible/ansible
     steps:
       # Checkout code from git
       # Add ssh keys with fingerprint
@@ -152,7 +189,7 @@ jobs:
 
   run-migrations:
     docker:
-      # Docker image here that supports NodeJS
+       - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
       - run:
@@ -169,7 +206,7 @@ jobs:
 
   deploy-frontend:
     docker:
-      # Docker image here that supports AWS CLI
+      - image: amazon/aws-cli
     steps:
       # Checkout code from git
       - run:
@@ -190,7 +227,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      # Docker image here that supports Ansible
+      - image: ansible/ansible
     steps:
       # Checkout code from git
       # Add ssh keys with fingerprint
@@ -207,7 +244,7 @@ jobs:
 
   smoke-test:
     docker:
-      # Lightweight Docker image 
+      - image: python:3.7-alpine3.11
     steps:
       # Checkout code from git
       - run:
@@ -230,7 +267,7 @@ jobs:
 
   cloudfront-update:
     docker:
-      # Docker image here that supports AWS CLI
+        - image: amazon/aws-cli
     steps:
       # Checkout code from git
       - run:
@@ -245,7 +282,7 @@ jobs:
 
 cleanup:
     docker:
-      # Docker image here
+       - image: amazon/aws-cli
     steps:
       # Checkout code from git
       - run:
